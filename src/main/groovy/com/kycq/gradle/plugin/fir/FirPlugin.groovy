@@ -94,7 +94,6 @@ class FirPlugin implements Plugin<Project> {
 			variantFirPublisherTask.versionCode = versionCode
 			variantFirPublisherTask.changeLog = changeLog
 			
-			println(variant.assemble)
 			variantFirPublisherTask.dependsOn(variant.assemble)
 			firPublisherTask.dependsOn(variantFirPublisherTask)
 			
