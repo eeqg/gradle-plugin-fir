@@ -18,7 +18,8 @@ class FirPlugin implements Plugin<Project> {
 				publishOutputInfo.each { println "${it}" }
 			}
 		}
-//		firPublisherTask.dependsOn(project.clean)
+		firPublisherTask.group = "publish"
+		
 		project.android.applicationVariants.all { variant ->
 			if (variant.buildType.debuggable) {
 				return
@@ -79,6 +80,7 @@ class FirPlugin implements Plugin<Project> {
 			def apkOutput = variant.outputs.find { variantOutput -> variantOutput instanceof ApkVariantOutput }
 			
 			def variantFirPublisherTask = project.tasks.create(publishTaskName, FirApkPublisherTask)
+			variantFirPublisherTask.group = "publish"
 			
 			variantFirPublisherTask.apiToken = apiToken
 			variantFirPublisherTask.bundleId = "${applicationId}.${variant.flavorName}.${variant.buildType.name}"
@@ -92,6 +94,7 @@ class FirPlugin implements Plugin<Project> {
 			variantFirPublisherTask.versionCode = versionCode
 			variantFirPublisherTask.changeLog = changeLog
 			
+			println(variant.assemble)
 			variantFirPublisherTask.dependsOn(variant.assemble)
 			firPublisherTask.dependsOn(variantFirPublisherTask)
 			
