@@ -6,6 +6,8 @@ import com.google.gson.JsonPrimitive
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.charset.Charset
+
 class FirApkPublisherTask extends DefaultTask {
 	String LINE_END = "\r\n"
 	String HYPHENS = "--"
@@ -133,6 +135,7 @@ class FirApkPublisherTask extends DefaultTask {
 			httpURLConnection.setRequestProperty("Connection", "Keep-Alive")
 			httpURLConnection.setRequestProperty("Accept", "*/*")
 			httpURLConnection.setRequestProperty("Cache-Control", "no-cache")
+			httpURLConnection.setRequestProperty("Charset", "UTF-8")
 			httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY)
 			
 			DataOutputStream dataOutputStream = new DataOutputStream(httpURLConnection.getOutputStream())
@@ -217,6 +220,7 @@ class FirApkPublisherTask extends DefaultTask {
 			httpURLConnection.setRequestProperty("Connection", "Keep-Alive")
 			httpURLConnection.setRequestProperty("Accept", "*/*")
 			httpURLConnection.setRequestProperty("Cache-Control", "no-cache")
+			httpURLConnection.setRequestProperty("Charset", "UTF-8")
 			httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + BOUNDARY)
 			
 			DataOutputStream dataOutputStream = new DataOutputStream(httpURLConnection.getOutputStream())
@@ -251,7 +255,7 @@ class FirApkPublisherTask extends DefaultTask {
 			dataOutputStream.writeBytes(HYPHENS + BOUNDARY + LINE_END)
 			dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"x:name\"" + LINE_END)
 			dataOutputStream.writeBytes(LINE_END)
-			dataOutputStream.writeBytes(appName)
+			dataOutputStream.write(appName.getBytes())
 			dataOutputStream.writeBytes(LINE_END)
 			dataOutputStream.flush()
 			// versionName
@@ -272,7 +276,7 @@ class FirApkPublisherTask extends DefaultTask {
 			dataOutputStream.writeBytes(HYPHENS + BOUNDARY + LINE_END)
 			dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"x:changelog\"" + LINE_END)
 			dataOutputStream.writeBytes(LINE_END)
-			dataOutputStream.writeBytes(changeLog)
+			dataOutputStream.write(changeLog.getBytes())
 			dataOutputStream.writeBytes(LINE_END)
 			dataOutputStream.flush()
 			

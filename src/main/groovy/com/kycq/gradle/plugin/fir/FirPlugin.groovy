@@ -18,7 +18,7 @@ class FirPlugin implements Plugin<Project> {
 				publishOutputInfo.each { println "${it}" }
 			}
 		}
-		firPublisherTask.dependsOn(project.clean)
+//		firPublisherTask.dependsOn(project.clean)
 		project.android.applicationVariants.all { variant ->
 			if (variant.buildType.debuggable) {
 				return
