@@ -255,7 +255,7 @@ class FirApkPublisherTask extends DefaultTask {
 			dataOutputStream.writeBytes(HYPHENS + BOUNDARY + LINE_END)
 			dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"x:name\"" + LINE_END)
 			dataOutputStream.writeBytes(LINE_END)
-			dataOutputStream.write(appName.getBytes())
+			dataOutputStream.write(appName.getBytes(Charset.forName("UTF-8")))
 			dataOutputStream.writeBytes(LINE_END)
 			dataOutputStream.flush()
 			// versionName
@@ -276,7 +276,7 @@ class FirApkPublisherTask extends DefaultTask {
 			dataOutputStream.writeBytes(HYPHENS + BOUNDARY + LINE_END)
 			dataOutputStream.writeBytes("Content-Disposition: form-data; name=\"x:changelog\"" + LINE_END)
 			dataOutputStream.writeBytes(LINE_END)
-			dataOutputStream.write(changeLog.getBytes())
+			dataOutputStream.write(changeLog.getBytes(Charset.forName("UTF-8")))
 			dataOutputStream.writeBytes(LINE_END)
 			dataOutputStream.flush()
 			
