@@ -6,6 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class FirPlugin implements Plugin<Project> {
+	static String GROUP = "publish"
 	
 	@Override
 	void apply(Project project) {
@@ -13,12 +14,30 @@ class FirPlugin implements Plugin<Project> {
 		
 		def publishOutputInfo = []
 		
-		def firPublisherTask = project.tasks.create("publishFir") {
+		def firPublishQuiteTask = project.tasks.create("publishFirQuite") {
 			doLast {
-				publishOutputInfo.each { println "${it}" }
+				FirApkInfoTask.IS_PRINT_INFO = false
 			}
 		}
-		firPublisherTask.group = "publish"
+		firPublishQuiteTask.group = GROUP
+		def firPublishNoisyTask = project.tasks.create("publishFirNoisy") {
+			doLast {
+				FirApkInfoTask.IS_PRINT_INFO = true
+			}
+		}
+		firPublishNoisyTask.group = GROUP
+		def firPublisherTask = project.tasks.create("publishFir") {
+			doLast {
+				publishOutputInfo.each { variantFirPublisherTask ->
+					variantFirPublisherTask.firApkInfoTask.printInfo()
+				}
+			}
+		}
+		firPublisherTask.group = GROUP
+		
+		firPublisherTask.dependsOn(firPublishQuiteTask)
+		firPublisherTask.dependsOn(firPublishNoisyTask)
+		firPublishNoisyTask.mustRunAfter(firPublishQuiteTask)
 		
 		project.android.applicationVariants.all { variant ->
 			if (variant.buildType.debuggable) {
@@ -49,20 +68,22 @@ class FirPlugin implements Plugin<Project> {
 			String versionName = variant.versionName;
 			def versionCode = variant.versionCode;
 			
-			def appName;
-			def downloadUrl;
-			def changeLog;
+			def bundleIdSuffix
+			def appName
+			def changeLog
 			def flavorInfo = jsonInfo.productFlavors[variant.flavorName]
 			if (flavorInfo == null) {
 				throw new NullPointerException("must config ${variant.flavorName} at jsonRoot.productFlavors.")
 			}
+			bundleIdSuffix = flavorInfo.bundleIdSuffix
+			if (bundleIdSuffix == null || bundleIdSuffix.length() == 0) {
+				bundleIdSuffix = ""
+			} else {
+				bundleIdSuffix = ".${bundleIdSuffix}"
+			}
 			appName = flavorInfo.appName
 			if (appName == null) {
 				throw new NullPointerException("must config appName at jsonRoot.productFlavors.${variant.flavorName} in ${infoFile} file.")
-			}
-			downloadUrl = flavorInfo.downloadUrl
-			if (downloadUrl == null) {
-				throw new NullPointerException("must config downloadUrl at jsonRoot.productFlavors.${variant.flavorName} in ${infoFile} file.")
 			}
 			if (flavorInfo.versionInfo != null) {
 				changeLog = flavorInfo.versionInfo[versionName]
@@ -80,31 +101,28 @@ class FirPlugin implements Plugin<Project> {
 			def apkOutput = variant.outputs.find { variantOutput -> variantOutput instanceof ApkVariantOutput }
 			
 			def variantFirPublisherTask = project.tasks.create(publishTaskName, FirApkPublisherTask)
-			variantFirPublisherTask.group = "publish"
+			variantFirPublisherTask.group = GROUP
 			
 			variantFirPublisherTask.apiToken = apiToken
-			variantFirPublisherTask.bundleId = "${applicationId}.${variant.flavorName}.${variant.buildType.name}"
+			variantFirPublisherTask.bundleId = "${applicationId}.${variant.flavorName}.${variant.buildType.name}${bundleIdSuffix}"
 			
 			variantFirPublisherTask.iconFile = iconFile
 			variantFirPublisherTask.apkFile = apkOutput.outputFile
 			variantFirPublisherTask.appName = appName
-			variantFirPublisherTask.downloadUrl = downloadUrl
 			
 			variantFirPublisherTask.versionName = versionName
 			variantFirPublisherTask.versionCode = versionCode
 			variantFirPublisherTask.changeLog = changeLog
 			
-			variantFirPublisherTask.dependsOn(variant.assemble)
-			firPublisherTask.dependsOn(variantFirPublisherTask)
+			variantFirPublisherTask.firApkInfoTask = new FirApkInfoTask(variantFirPublisherTask.apiToken, variantFirPublisherTask.bundleId)
 			
-			variantFirPublisherTask.outputInfo = new StringBuilder()
-					.append("================== ${appName} ==================")
-					.append("\n")
-					.append("versionName: ${versionName}  versionCode: ${versionCode} downloadUrl: ${downloadUrl}")
-					.append("\n")
-			publishOutputInfo.add(variantFirPublisherTask.outputInfo)
+			variantFirPublisherTask.dependsOn(variant.assemble)
+			
+			firPublisherTask.dependsOn(variantFirPublisherTask)
+			variantFirPublisherTask.mustRunAfter(firPublishQuiteTask)
+			firPublishNoisyTask.mustRunAfter(variantFirPublisherTask)
+			
+			publishOutputInfo.add(variantFirPublisherTask)
 		}
 	}
-	
-	
 }

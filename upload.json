@@ -1,0 +1,29 @@
+{
+	"apiToken": "",
+	"versionInfo": {
+		"1.0.0": "version log\n\n1.update content\n2.update content"
+	},
+	"productFlavors": {
+		"flavorDevelop": {
+			"appName": "app(develop)",
+			"bundleIdSuffix": "",
+			"versionInfo": {
+			
+			}
+		},
+		"flavorTest": {
+			"appName": "app(test)",
+			"bundleIdSuffix": "",
+			"versionInfo": {
+			
+			}
+		},
+		"flavorProduct": {
+			"appName": "app(product)",
+			"bundleIdSuffix": "",
+			"versionInfo": {
+			
+			}
+		}
+	}
+}
