@@ -1,6 +1,5 @@
 package com.kycq.gradle.plugin.fir
 
-import com.android.build.gradle.api.ApkVariantOutput
 import groovy.json.JsonSlurper
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -10,119 +9,77 @@ class FirPlugin implements Plugin<Project> {
 	
 	@Override
 	void apply(Project project) {
-		project.extensions.create('firPublisher', FirPublisherExtension)
+		project.extensions.create('firPublisher', FirAppExtension)
 		
-		def publishOutputInfo = []
-		
-		def firPublishQuiteTask = project.tasks.create("publishFirQuite") {
-			doLast {
-				FirApkInfoTask.IS_PRINT_INFO = false
-			}
-		}
-		firPublishQuiteTask.group = GROUP
-		def firPublishNoisyTask = project.tasks.create("publishFirNoisy") {
-			doLast {
-				FirApkInfoTask.IS_PRINT_INFO = true
-			}
-		}
-		firPublishNoisyTask.group = GROUP
-		def firPublisherTask = project.tasks.create("publishFir") {
-			doLast {
-				publishOutputInfo.each { variantFirPublisherTask ->
-					variantFirPublisherTask.firApkInfoTask.printInfo()
-				}
-			}
-		}
-		firPublisherTask.group = GROUP
-		
-		firPublisherTask.dependsOn(firPublishQuiteTask)
-		firPublisherTask.dependsOn(firPublishNoisyTask)
-		firPublishNoisyTask.mustRunAfter(firPublishQuiteTask)
-		
-		project.android.applicationVariants.all { variant ->
-			if (variant.buildType.debuggable) {
-				return
-			}
-			if (!variant.signingReady) {
-				throw new RuntimeException("must add signingConfigs.")
-			}
-			
+		project.afterEvaluate {
 			def infoFile = project.firPublisher.infoFile
 			if (infoFile == null) {
 				throw new NullPointerException("must config firPublisher.infoFile it build.gradle.")
 			}
-			def iconFile = project.firPublisher.iconFile
 			def jsonInfo = new JsonSlurper().parseText(infoFile.text)
 			def apiToken = jsonInfo.apiToken
 			if (apiToken == null) {
 				throw new NullPointerException("must config apiToken at jsonRoot in ${infoFile} file.")
 			}
+			def versionInfo = jsonInfo.versionInfo
 			if (jsonInfo.productFlavors == null) {
 				throw new NullPointerException("must config productFlavors at JsonRoot in ${infoFile} file.")
 			}
 			
-			def name = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
-			def publishTaskName = "publishFir${name}"
+			def iconFile = project.firPublisher.iconFile
 			
-			def applicationId = variant.applicationId;
-			String versionName = variant.versionName;
-			def versionCode = variant.versionCode;
+			def firAppPublisherTask = project.tasks.create("publishFir", FirAppPublisherTask)
+			firAppPublisherTask.dependsOn(project.assemble)
+			firAppPublisherTask.group = GROUP
+			firAppPublisherTask.singlePrinter = false
 			
-			def bundleIdSuffix
-			def appName
-			def changeLog
-			def flavorInfo = jsonInfo.productFlavors[variant.flavorName]
-			if (flavorInfo == null) {
-				throw new NullPointerException("must config ${variant.flavorName} at jsonRoot.productFlavors.")
-			}
-			bundleIdSuffix = flavorInfo.bundleIdSuffix
-			if (bundleIdSuffix == null || bundleIdSuffix.length() == 0) {
-				bundleIdSuffix = ""
-			} else {
-				bundleIdSuffix = ".${bundleIdSuffix}"
-			}
-			appName = flavorInfo.appName
-			if (appName == null) {
-				throw new NullPointerException("must config appName at jsonRoot.productFlavors.${variant.flavorName} in ${infoFile} file.")
-			}
-			if (flavorInfo.versionInfo != null) {
-				changeLog = flavorInfo.versionInfo[versionName]
-			}
-			if (changeLog == null) {
-				if (jsonInfo.versionInfo == null) {
-					throw new NullPointerException("must config versionInfo at json.root or jsonRoot.productFlavors.${variant.flavorName} in ${infoFile} file.")
+			def firAppInfoPrinterTask = project.tasks.create("printFir", FirAppPrinterTask)
+			firAppInfoPrinterTask.group = GROUP
+			firAppInfoPrinterTask.singlePrinter = false
+			
+			project.android.applicationVariants.all { variant ->
+				def name = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
+				def firVariantPublisherTask = project.tasks.create("publishFir${name}", FirAppPublisherTask)
+				firVariantPublisherTask.dependsOn(variant.assemble)
+				firVariantPublisherTask.group = GROUP
+				
+				def firVariantInfoPrinterTask = project.tasks.create("printFir${name}", FirAppPrinterTask)
+				firVariantInfoPrinterTask.group = GROUP
+				
+				def productFlavorInfo = jsonInfo.productFlavors[variant.name]
+				if (productFlavorInfo == null && variant.buildType.name.equals("release")) {
+					productFlavorInfo = jsonInfo.productFlavors[variant.flavorName]
 				}
-				changeLog = jsonInfo.versionInfo[versionName]
+				
+				// Publisher
+				FirAppPublisher firAppPublisher = new FirAppPublisher()
+				firAppPublisher.iconFile = iconFile
+				firAppPublisher.variant = variant
+				firAppPublisher.apiToken = apiToken
+				firAppPublisher.publicVersionInfo = versionInfo
+				firAppPublisher.productFlavorInfo = productFlavorInfo
+				
+				// Printer
+				FirAppInfoPrinter firAppInfoPrinter = new FirAppInfoPrinter()
+				firAppInfoPrinter.logger = project.logger
+				firAppInfoPrinter.variant = variant
+				firAppInfoPrinter.apiToken = apiToken
+				firAppInfoPrinter.productFlavorInfo = productFlavorInfo
+				
+				// ==================== Task ====================
+				
+				firVariantPublisherTask.firAppPublisherList.add(firAppPublisher)
+				firVariantPublisherTask.firAppInfoPrinterList.add(firAppInfoPrinter)
+				firVariantPublisherTask.size++
+				
+				firVariantInfoPrinterTask.firAppInfoPrinterList.add(firAppInfoPrinter)
+				
+				firAppPublisherTask.firAppPublisherList.add(firAppPublisher)
+				firAppPublisherTask.firAppInfoPrinterList.add(firAppInfoPrinter)
+				firAppPublisherTask.size++
+				
+				firAppInfoPrinterTask.firAppInfoPrinterList.add(firAppInfoPrinter)
 			}
-			if (changeLog == null) {
-				throw new NullPointerException("must config ${versionName} version log at versionInfo or jsonRoot.productFlavors.${variant.flavorName}.versionInfo in ${infoFile} file.")
-			}
-			
-			def apkOutput = variant.outputs.find { variantOutput -> variantOutput instanceof ApkVariantOutput }
-			
-			def variantFirPublisherTask = project.tasks.create(publishTaskName, FirApkPublisherTask)
-			variantFirPublisherTask.group = GROUP
-			
-			variantFirPublisherTask.apiToken = apiToken
-			variantFirPublisherTask.bundleId = "${applicationId}.${variant.flavorName}.${variant.buildType.name}${bundleIdSuffix}"
-			
-			variantFirPublisherTask.iconFile = iconFile
-			variantFirPublisherTask.apkFile = apkOutput.outputFile
-			variantFirPublisherTask.appName = appName
-			
-			variantFirPublisherTask.versionName = versionName
-			variantFirPublisherTask.versionCode = versionCode
-			variantFirPublisherTask.changeLog = changeLog
-			
-			variantFirPublisherTask.firApkInfoTask = new FirApkInfoTask(variantFirPublisherTask.apiToken, variantFirPublisherTask.bundleId)
-			
-			variantFirPublisherTask.dependsOn(variant.assemble)
-			
-			firPublisherTask.dependsOn(variantFirPublisherTask)
-			variantFirPublisherTask.mustRunAfter(firPublishQuiteTask)
-			firPublishNoisyTask.mustRunAfter(variantFirPublisherTask)
-			
-			publishOutputInfo.add(variantFirPublisherTask)
 		}
 	}
 }

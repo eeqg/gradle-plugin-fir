@@ -1,6 +1,6 @@
 package com.kycq.gradle.plugin.fir
 
-class FirPublisherExtension {
+class FirAppExtension {
 	File infoFile
 	File iconFile
 }
