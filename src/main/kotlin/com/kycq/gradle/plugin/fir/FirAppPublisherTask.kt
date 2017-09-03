@@ -3,22 +3,22 @@ package com.kycq.gradle.plugin.fir
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-class FirAppPublisherTask extends DefaultTask {
-	boolean singlePrinter = true
-	ArrayList<FirAppPublisher> firAppPublisherList = new ArrayList<>()
-	ArrayList<FirAppInfoPrinter> firAppInfoPrinterList = new ArrayList<>()
-	int size = 0
+open class FirAppPublisherTask : DefaultTask() {
+	var singlePrinter = true
+	var firAppPublisherList : ArrayList<FirAppPublisher> = ArrayList()
+	var firAppInfoPrinterList : ArrayList<FirAppInfoPrinter> = ArrayList()
+	var size = 0
 	
 	@TaskAction
-	void exec() {
-		for (int index = 0; index < size; index++) {
+	fun exec() {
+		for (index in firAppInfoPrinterList.indices) {
 			firAppPublisherList[index].publish(singlePrinter)
 			if (singlePrinter) {
 				firAppInfoPrinterList[index].printInfo(singlePrinter)
 			}
 		}
 		if (!singlePrinter) {
-			firAppInfoPrinterList.each { firAppInfoPrinter ->
+			firAppInfoPrinterList.forEach { firAppInfoPrinter ->
 				firAppInfoPrinter.printInfo(singlePrinter)
 			}
 		}
