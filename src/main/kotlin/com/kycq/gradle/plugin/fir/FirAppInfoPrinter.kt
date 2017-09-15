@@ -66,6 +66,8 @@ open class FirAppInfoPrinter {
 		
 		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream,"UTF-8"))
 		val resultStr = bufferedReader.readText()
+		println("=============")
+		println(resultStr)
 		bufferedReader.close()
 		
 		return Gson().fromJson(resultStr, JsonObject::class.java)
