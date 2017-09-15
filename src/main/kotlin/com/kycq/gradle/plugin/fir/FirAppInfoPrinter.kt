@@ -65,17 +65,11 @@ open class FirAppInfoPrinter {
 		httpURLConnection.setRequestProperty("Charset", "UTF-8")
 		
 		val builder = StringBuilder()
-		val inputStream = httpURLConnection.inputStream
-		val buffer = ByteArray(2048)
-		var length : Int
+		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream, "UTF-8"))
 		while (true) {
-			length = inputStream.read(buffer)
-			if (length <= 0) {
-				break
-			}
-			builder.append(String(buffer, 0, length))
+			val line = bufferedReader.readLine() ?: break;
+			builder.append(line)
 		}
-//		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream, "UTF-8"))
 //		val resultStr = bufferedReader.readText()
 		println("=============")
 		println(builder.toString())
