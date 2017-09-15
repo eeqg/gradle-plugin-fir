@@ -246,7 +246,7 @@ class FirAppPublisher {
 		dataOutputStream.flush()
 		dataOutputStream.close()
 		
-		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream))
+		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream,"UTF-8"))
 		val resultStr = bufferedReader.readText()
 		
 		val jsonObject = Gson().fromJson(resultStr, JsonObject::class.java)

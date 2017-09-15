@@ -64,7 +64,7 @@ open class FirAppInfoPrinter {
 		httpURLConnection.readTimeout = 10 * 1000
 		httpURLConnection.setRequestProperty("Charset", "UTF-8")
 		
-		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream))
+		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream,"UTF-8"))
 		val resultStr = bufferedReader.readText()
 		bufferedReader.close()
 		
