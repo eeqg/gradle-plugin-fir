@@ -64,10 +64,17 @@ open class FirAppInfoPrinter {
 		httpURLConnection.readTimeout = 10 * 1000
 		httpURLConnection.setRequestProperty("Charset", "UTF-8")
 		
-		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream,"UTF-8"))
-		val resultStr = bufferedReader.readText()
-		bufferedReader.close()
+		val builder = StringBuilder()
+		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream, "UTF-8"))
+		while (true) {
+			val line = bufferedReader.readLine() ?: break;
+			builder.append(line)
+		}
+//		val resultStr = bufferedReader.readText()
+		println("=============")
+		println(builder.toString())
+//		bufferedReader.close()
 		
-		return Gson().fromJson(resultStr, JsonObject::class.java)
+		return Gson().fromJson(builder.toString(), JsonObject::class.java)
 	}
 }

@@ -15,6 +15,7 @@ class FirAppPublisher {
 	private val HYPHENS = "--"
 	private val BOUNDARY = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
 	
+	lateinit var gitBranchPrefix : String
 	var iconFile: File? = null
 	lateinit var variant: ApplicationVariant
 	lateinit var apiToken: String
@@ -34,7 +35,7 @@ class FirAppPublisher {
 			".$bundleIdSuffix"
 		}
 		
-		val bundleId = "${variant.applicationId}.${variant.name}$bundleIdSuffix"
+		val bundleId = "$gitBranchPrefix.${variant.applicationId}.${variant.name}$bundleIdSuffix"
 		val apkOutput = variant.outputs.find { variantOutput -> variantOutput is ApkVariantOutput }
 		val apkFile = apkOutput!!.outputFile
 		val appName = productFlavorInfo.getAsJsonPrimitive("appName").asString
