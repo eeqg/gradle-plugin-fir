@@ -40,7 +40,7 @@ compileTestKotlin {
 uploadArchives {
 	repositories {
 		mavenDeployer {
-			repository(url: uri('/Users/kycq/repo'))
+			repository(url: uri('/Users/abshyer/repo'))
 		}
 	}
 }
