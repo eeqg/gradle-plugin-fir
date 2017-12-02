@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import java.io.File
 
 open class FirPlugin : Plugin<Project> {
 	private val FIR_APP_EXTENSION = "firPublisher"
@@ -18,6 +19,24 @@ open class FirPlugin : Plugin<Project> {
 		project.extensions.create(FIR_APP_EXTENSION, FirAppExtension::class.java)
 		
 		project.afterEvaluate {
+			var gitBranchPrefix = ""
+			val gitHeadFile = File(project.rootDir.path + "/.git/HEAD")
+			if (gitHeadFile.exists()) {
+				val gitBranchArray = gitHeadFile.readText()
+						.replace("ref: refs/heads/", "")
+						.replace("\n", "")
+						.split("/")
+				val gitBranchPrefixBuilder = StringBuilder()
+				gitBranchArray.forEach {
+					gitBranchPrefixBuilder.append(it[0].toUpperCase())
+							.append(it.subSequence(1, it.length))
+				}
+				gitBranchPrefix = gitBranchPrefixBuilder.toString()
+			}
+			if (gitBranchPrefix.isEmpty()) {
+				gitBranchPrefix = "master"
+			}
+			
 			val firAppExtension = project.extensions.findByType(FirAppExtension::class.java)
 			val infoFile = firAppExtension.infoFile
 			when (infoFile) {
@@ -63,6 +82,7 @@ open class FirPlugin : Plugin<Project> {
 				
 				// Publisher
 				val firAppPublisher = FirAppPublisher()
+				firAppPublisher.gitBranchPrefix = gitBranchPrefix
 				firAppPublisher.iconFile = iconFile
 				firAppPublisher.variant = variant
 				firAppPublisher.apiToken = apiToken
