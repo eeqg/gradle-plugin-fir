@@ -13,6 +13,7 @@ open class FirAppInfoPrinter {
 	lateinit var logger: Logger
 	lateinit var variant: ApplicationVariant
 	lateinit var apiToken: String
+	lateinit var gitBranchPrefix : String
 	var productFlavorInfo: JsonObject? = null
 	
 	fun printInfo(strictProductFlavor: Boolean) {
@@ -28,7 +29,7 @@ open class FirAppInfoPrinter {
 		} else {
 			".$bundleIdSuffix"
 		}
-		val bundleId = "${variant.applicationId}.${variant.name}$bundleIdSuffix"
+		val bundleId = "$gitBranchPrefix.${variant.applicationId}.${variant.name}$bundleIdSuffix"
 		
 		val appInfoObject = getAppInfo(apiToken, bundleId)
 		if (appInfoObject == null) {
@@ -67,13 +68,9 @@ open class FirAppInfoPrinter {
 		val builder = StringBuilder()
 		val bufferedReader = BufferedReader(InputStreamReader(httpURLConnection.inputStream, "UTF-8"))
 		while (true) {
-			val line = bufferedReader.readLine() ?: break;
+			val line = bufferedReader.readLine() ?: break
 			builder.append(line)
 		}
-//		val resultStr = bufferedReader.readText()
-		println("=============")
-		println(builder.toString())
-//		bufferedReader.close()
 		
 		return Gson().fromJson(builder.toString(), JsonObject::class.java)
 	}
