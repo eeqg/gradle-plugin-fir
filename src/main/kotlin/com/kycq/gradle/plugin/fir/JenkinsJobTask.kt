@@ -41,6 +41,9 @@ open class JenkinsJobTask : DefaultTask() {
 				"<triggers/>\n" +
 				"<concurrentBuild>false</concurrentBuild>\n" +
 				"<builders>\n" +
+				"<hudson.tasks.Shell>\n" +
+				"<command>@{gitToolPath} checkout @{configBranch}</command>\n" +
+				"</hudson.tasks.Shell>" +
 				"    <hudson.plugins.gradle.Gradle plugin=\"gradle@1.28\">\n" +
 				"    <switches/>\n" +
 				"    <tasks>@{configTask}</tasks>\n" +
@@ -61,6 +64,7 @@ open class JenkinsJobTask : DefaultTask() {
 				"</project>\n"
 	}
 	
+	lateinit var gitToolPath: String
 	lateinit var gitUrl: String
 	lateinit var gitBranch: String
 	lateinit var jobName: String
@@ -85,6 +89,7 @@ open class JenkinsJobTask : DefaultTask() {
 		httpURLConnection.setRequestProperty("Authorization", "Basic $jenkinsAuthrization")
 		
 		val configContent = JOBS_CONFIG
+				.replace("@{gitToolPath}", this.gitToolPath)
 				.replace("@{configGitUrl}", this.gitUrl)
 				.replace("@{configCredentialsId}", this.jenkinsCredentialsId)
 				.replace("@{configBranch}", this.gitBranch)

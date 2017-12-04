@@ -9,28 +9,54 @@ import java.io.File
 import java.io.FileReader
 
 open class FirPlugin : Plugin<Project> {
-	private val FIR_APP_EXTENSION = "firPublisher"
-	private val API_TOKEN = "apiToken"
-	private val VERSION_INFO = "versionInfo"
-	private val PRODUCT_FLAVORS = "productFlavors"
-	private val ASSEMBLE = "assemble"
-	private val GROUP_NAME = "publish"
+	companion object {
+		val FIR_APP_EXTENSION = "firPublisher"
+		val API_TOKEN = "apiToken"
+		val VERSION_INFO = "versionInfo"
+		val PRODUCT_FLAVORS = "productFlavors"
+		val ASSEMBLE = "assemble"
+		val GROUP_NAME = "publish"
+	}
 	
 	override fun apply(project: Project) {
 		project.extensions.create(FIR_APP_EXTENSION, FirAppExtension::class.java)
 		
 		project.afterEvaluate {
+			var gitUrl = ""
+			var gitBranch = ""
+			var gitBranchPrefix = ""
+			val gitDir = File(project.rootDir.path + "/.git")
+			if (gitDir.exists()) {
+				val gitConfigFile = File(project.rootDir.path + "/.git/config")
+				val fileReader = FileReader(gitConfigFile)
+				fileReader.readLines().forEach {
+					val lineText = it.trim()
+					if (lineText.contains("url = ")) {
+						gitUrl = lineText.split(" = ")[1]
+					}
+				}
+				
+				val gitHeadFile = File(project.rootDir.path + "/.git/HEAD")
+				gitBranch = gitHeadFile.readText()
+						.replace("ref: refs/heads/", "")
+						.replace("\n", "")
+				val gitBranchArray = gitBranch.split("/")
+				val gitBranchBuilder = StringBuilder()
+				gitBranchArray.forEach {
+					gitBranchBuilder.append(it[0].toUpperCase())
+							.append(it.subSequence(1, it.length))
+				}
+				gitBranchPrefix = gitBranchBuilder.toString()
+			}
+			
+			if (gitBranch.isEmpty()) {
+				gitBranch = "master"
+				gitBranchPrefix = "master"
+			}
+			
 			val projectName = project.name.substring(0, 1).toUpperCase() + project.name.substring(1)
 			
 			val firAppExtension = project.extensions.findByType(FirAppExtension::class.java)
-			val gitBranchArray = firAppExtension.gitBranch.split("/")
-			val gitBranchBuilder = StringBuilder()
-			gitBranchArray.forEach {
-				gitBranchBuilder.append(it[0].toUpperCase())
-						.append(it.subSequence(1, it.length))
-			}
-			val gitBranchPrefix = gitBranchBuilder.toString()
-			
 			val infoFile = firAppExtension.infoFile
 			when (infoFile) {
 				null -> throw  NullPointerException("must config firPublisher.infoFile it build.gradle.")
@@ -61,14 +87,10 @@ open class FirPlugin : Plugin<Project> {
 			androidExtension.applicationVariants.forEach { variant ->
 				val name = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
 				
-				if (!(firAppExtension.gitUrl == null
-						&& firAppExtension.jenkinsUrl == null
+				if (!(firAppExtension.jenkinsUrl == null
 						&& firAppExtension.jenkinsAuthrization == null
 						&& firAppExtension.jenkinsCredentialsId == null
 						&& firAppExtension.jenkinsTaskGradleName == null)) {
-					if (firAppExtension.gitUrl == null) {
-						throw RuntimeException("must config gitUrl")
-					}
 					if (firAppExtension.jenkinsUrl == null) {
 						throw RuntimeException("must config jenkinsUrl")
 					}
@@ -84,8 +106,9 @@ open class FirPlugin : Plugin<Project> {
 					
 					val jenkinsTask = project.tasks.create("jenkinsJob$name", JenkinsJobTask::class.java)
 					jenkinsTask.group = GROUP_NAME
-					jenkinsTask.gitUrl = firAppExtension.gitUrl!!
-					jenkinsTask.gitBranch = firAppExtension.gitBranch
+					jenkinsTask.gitToolPath = firAppExtension.gitToolPath
+					jenkinsTask.gitUrl = gitUrl
+					jenkinsTask.gitBranch = gitBranch
 					
 					jenkinsTask.jobName = project.rootProject.name + projectName + gitBranchPrefix + name
 					jenkinsTask.jenkinsUrl = firAppExtension.jenkinsUrl!!
