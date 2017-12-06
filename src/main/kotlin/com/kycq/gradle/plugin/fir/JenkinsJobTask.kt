@@ -60,7 +60,13 @@ open class JenkinsJobTask : DefaultTask() {
 				"    </hudson.plugins.gradle.Gradle>\n" +
 				"</builders>\n" +
 				"<publishers/>\n" +
-				"<buildWrappers/>\n" +
+				"<buildWrappers>\n" +
+				"    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin=\"ws-cleanup@0.33\">\n" +
+				"    <deleteDirs>false</deleteDirs>\n" +
+				"    <cleanupParameter/>\n" +
+				"    <externalDelete/>\n" +
+				"    </hudson.plugins.ws__cleanup.PreBuildCleanup>\n" +
+				"</buildWrappers>" +
 				"</project>\n"
 	}
 	
