@@ -10,9 +10,10 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.util.regex.Pattern
 
+@Suppress("unused")
 open class JenkinsJobTask : DefaultTask() {
 	companion object {
-		val JOBS_CONFIG = "<project>\n" +
+		const val JOBS_CONFIG = "<project>\n" +
 				"    <actions/>\n" +
 				"    <description/>\n" +
 				"    <keepDependencies>false</keepDependencies>\n" +
@@ -76,7 +77,7 @@ open class JenkinsJobTask : DefaultTask() {
 	lateinit var jobName: String
 	
 	lateinit var jenkinsUrl: String
-	lateinit var jenkinsAuthrization: String
+	lateinit var jenkinsAuthorization: String
 	lateinit var jenkinsCredentialsId: String
 	lateinit var jenkinsTaskName: String
 	lateinit var jenkinsTaskGradleName: String
@@ -92,7 +93,7 @@ open class JenkinsJobTask : DefaultTask() {
 		httpURLConnection.doInput = true
 		
 		httpURLConnection.setRequestProperty("Content-Type", "application/xml")
-		httpURLConnection.setRequestProperty("Authorization", "Basic $jenkinsAuthrization")
+		httpURLConnection.setRequestProperty("Authorization", "Basic $jenkinsAuthorization")
 		
 		val configContent = JOBS_CONFIG
 				.replace("@{gitToolPath}", this.gitToolPath)

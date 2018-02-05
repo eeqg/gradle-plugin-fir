@@ -10,12 +10,12 @@ import java.io.FileReader
 
 open class FirPlugin : Plugin<Project> {
 	companion object {
-		val FIR_APP_EXTENSION = "firPublisher"
-		val API_TOKEN = "apiToken"
-		val VERSION_INFO = "versionInfo"
-		val PRODUCT_FLAVORS = "productFlavors"
-		val ASSEMBLE = "assemble"
-		val GROUP_NAME = "publish"
+		const val FIR_APP_EXTENSION = "firPublisher"
+		const val API_TOKEN = "apiToken"
+		const val VERSION_INFO = "versionInfo"
+		const val PRODUCT_FLAVORS = "productFlavors"
+		const val ASSEMBLE = "assemble"
+		const val GROUP_NAME = "publish"
 	}
 	
 	override fun apply(project: Project) {
@@ -88,14 +88,14 @@ open class FirPlugin : Plugin<Project> {
 				val name = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
 				
 				if (!(firAppExtension.jenkinsUrl == null
-						&& firAppExtension.jenkinsAuthrization == null
+						&& firAppExtension.jenkinsAuthorization == null
 						&& firAppExtension.jenkinsCredentialsId == null
 						&& firAppExtension.jenkinsTaskGradleName == null)) {
 					if (firAppExtension.jenkinsUrl == null) {
 						throw RuntimeException("must config jenkinsUrl")
 					}
-					if (firAppExtension.jenkinsAuthrization == null) {
-						throw RuntimeException("must config jenkinsAuthrization")
+					if (firAppExtension.jenkinsAuthorization == null) {
+						throw RuntimeException("must config jenkinsAuthorization")
 					}
 					if (firAppExtension.jenkinsCredentialsId == null) {
 						throw RuntimeException("must config jenkinsCredentialsId")
@@ -112,7 +112,7 @@ open class FirPlugin : Plugin<Project> {
 					
 					jenkinsTask.jobName = project.rootProject.name + projectName + gitBranchPrefix + name
 					jenkinsTask.jenkinsUrl = firAppExtension.jenkinsUrl!!
-					jenkinsTask.jenkinsAuthrization = firAppExtension.jenkinsAuthrization!!
+					jenkinsTask.jenkinsAuthorization = firAppExtension.jenkinsAuthorization!!
 					jenkinsTask.jenkinsCredentialsId = firAppExtension.jenkinsCredentialsId!!
 					jenkinsTask.jenkinsTaskName = "publishFir$name"
 					jenkinsTask.jenkinsTaskGradleName = firAppExtension.jenkinsTaskGradleName!!

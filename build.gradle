@@ -2,7 +2,7 @@ group 'com.github.kycqdhl3c'
 version '1.5.3'
 
 buildscript {
-	ext.kotlin_version = '1.1.4-3'
+	ext.kotlin_version = '1.2.10'
 	
 	repositories {
 		mavenCentral()
@@ -21,13 +21,16 @@ sourceCompatibility = 1.8
 repositories {
 	jcenter()
 	mavenCentral()
+	maven {
+		url "https://dl.google.com/dl/android/maven2/"
+	}
 }
 
 dependencies {
-	compile gradleApi()
 	compile 'org.codehaus.groovy:groovy-all:2.3.11'
+	compileOnly gradleApi()
+	compileOnly "com.android.tools.build:gradle:3.0.1"
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-	compile "com.android.tools.build:gradle:2.3.3"
 }
 
 tasks.withType(JavaCompile) {

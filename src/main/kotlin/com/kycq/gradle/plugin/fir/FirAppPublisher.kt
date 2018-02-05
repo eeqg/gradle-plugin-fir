@@ -11,9 +11,11 @@ import java.net.URL
 import java.nio.charset.Charset
 
 class FirAppPublisher {
-	private val LINE_END = "\r\n"
-	private val HYPHENS = "--"
-	private val BOUNDARY = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+	companion object {
+		private const val LINE_END = "\r\n"
+		private const val HYPHENS = "--"
+		private const val BOUNDARY = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+	}
 	
 	lateinit var gitBranchPrefix : String
 	var iconFile: File? = null

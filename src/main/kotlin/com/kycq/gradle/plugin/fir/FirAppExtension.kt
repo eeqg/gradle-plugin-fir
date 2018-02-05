@@ -6,7 +6,7 @@ open class FirAppExtension {
 	var gitToolPath = "/usr/bin/git"
 	
 	var jenkinsUrl: String? = null
-	var jenkinsAuthrization: String? = null
+	var jenkinsAuthorization: String? = null
 	var jenkinsCredentialsId: String? = null
 	var jenkinsTaskGradleName: String? = null
 	
